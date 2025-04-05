@@ -100,7 +100,7 @@ db.connect(err => {
         // ===================================================================================================================
         // _________________________________________________
         // Переменная для создания таблицы СЕТОВ
-        const createTableSets = 'create table if not exists sets(id int auto_increment primary key, title varchar(255) not null, description varchar(255), price smallint';
+        const createTableSets = 'create table if not exists sets(id int auto_increment primary key, title varchar(255), description varchar(255), price smallint)';
 
         // Создание таблицы СЕТОВ в выбраной БД
         db.query(createTableSets, (err) => {
@@ -109,7 +109,7 @@ db.connect(err => {
         });
         // _________________________________________________
         // Переменная для создания таблицы СУШИ
-        const createTableSushi = 'create table if not exists sushi(id int auto_increment primary key, title varchar(255) not null, description varchar(255), price smallint';
+        const createTableSushi = 'create table if not exists sushi(id int auto_increment primary key, title varchar(255) not null, description varchar(255), price smallint)';
 
         // Создание таблицы СУШИ в выбраной БД
         db.query(createTableSushi, (err) => {
@@ -118,7 +118,7 @@ db.connect(err => {
         });
         // _________________________________________________
         // Переменная для создания таблицы РОЛЛОВ
-        const createTableRolls = 'create table if not exists rolls(id int auto_increment primary key, title varchar(255) not null, description varchar(255), price smallint';
+        const createTableRolls = 'create table if not exists rolls(id int auto_increment primary key, title varchar(255) not null, description varchar(255), price smallint)';
 
         // Создание таблицы РОЛЛОВ в выбраной БД
         db.query(createTableRolls, (err) => {
@@ -127,7 +127,7 @@ db.connect(err => {
         });
         // _________________________________________________
         // Переменная для создания таблицы СОУСОВ
-        const createTableSauces = 'create table if not exists sauces(id int auto_increment primary key, title varchar(255) not null, description varchar(255), price smallint';
+        const createTableSauces = 'create table if not exists sauces(id int auto_increment primary key, title varchar(255) not null, description varchar(255), price smallint)';
 
         // Создание таблицы СОУСОВ в выбраной БД
         db.query(createTableSauces, (err) => {
@@ -136,7 +136,7 @@ db.connect(err => {
         });
         // _________________________________________________
         // Переменная для создания таблицы НАПИТКОВ
-        const createTableDrinks = 'create table if not exists drinks(id int auto_increment primary key, title varchar(255) not null, description varchar(255), price smallint';
+        const createTableDrinks = 'create table if not exists drinks(id int auto_increment primary key, title varchar(255) not null, description varchar(255), price smallint)';
 
         // Создание таблицы НАПИТКОВ в выбраной БД
         db.query(createTableDrinks, (err) => {
