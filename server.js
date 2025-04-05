@@ -24,7 +24,7 @@ const PORT = process.env.PORT || 5000;
 console.log(process.env.PORT);
 
 // Обходим политику cors
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+app.use(cors({ origin: 'http://localhost:3001', credentials: true }));
 // express работает с json
 app.use(express.json());
 // Работаем с куки
