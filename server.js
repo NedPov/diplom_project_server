@@ -100,7 +100,7 @@ db.connect(err => {
         // ===================================================================================================================
         // _________________________________________________
         // Переменная для создания таблицы СЕТОВ
-        const createTableProducts = 'create table if not exists products(id int auto_increment primary key, title varchar(255), description varchar(255), price smallint, productType varchar(255))';
+        const createTableProducts = 'create table if not exists products(id int auto_increment primary key, title varchar(255), description varchar(255), price smallint, productType varchar(255), quantity smallint)';
 
         // Создание таблицы СЕТОВ в выбраной БД
         db.query(createTableProducts, (err) => {
@@ -165,7 +165,7 @@ db.connect(err => {
 // Генерация токена доступа
 const generateAccessToken = (user) => {
     // Подписываем токен
-    const accessToken = jwt.sign({ id: user.id, username: user.username, role: user.role, role_id: user.role_id }, process.env.ACCESS_SECRET, { expiresIn: '15m' });
+    const accessToken = jwt.sign({ id: user.id, username: user.username, role: user.role, role_id: user.role_id }, process.env.ACCESS_SECRET, { expiresIn: '30m' });
     return accessToken;
 }
 
@@ -410,13 +410,13 @@ app.get('/drinks', authenticateToken, (req, res) => {
 // ДОБАВЛЕНИЕ ПРОДУКЦИИ{
 app.post('/addProducts', authenticateToken, (req, res) => {
     // Достаем данные из запроса, из тела
-    const { title, description, price, productType } = req.body;
-    console.log({ title, description, price, productType });
+    const { title, description, price, productType, quantity } = req.body;
+    console.log({ title, description, price, productType, quantity });
     // Добваляем сет в БД
-    db.query('insert into products(title, description, price, productType) values (?, ?, ?, ?)', [title, description, price, productType], (err, result) => {
+    db.query('insert into products(title, description, price, productType, quantity) values (?, ?, ?, ?, ?)', [title, description, price, productType, quantity], (err, result) => {
         if (err) return res.status(500).json({ message: 'Не получилось добавить сет', error: err.message });
         // Отправляем ответ
-        res.json({ id: result.insertId, title, description, price, productType });
+        res.json({ id: result.insertId, title, description, price, productType, quantity });
     });
 });
 // // СУШИ
