@@ -165,7 +165,7 @@ db.connect(err => {
 // Генерация токена доступа
 const generateAccessToken = (user) => {
     // Подписываем токен
-    const accessToken = jwt.sign({ id: user.id, username: user.username, role: user.role, role_id: user.role_id }, process.env.ACCESS_SECRET, { expiresIn: '30m' });
+    const accessToken = jwt.sign({ id: user.id, username: user.username, role: user.role, role_id: user.role_id }, process.env.ACCESS_SECRET, { expiresIn: '450m' });
     return accessToken;
 }
 
@@ -419,51 +419,9 @@ app.post('/addProducts', authenticateToken, (req, res) => {
         res.json({ id: result.insertId, title, description, price, productType, quantity });
     });
 });
-// // СУШИ
-// app.post('/sushi', authenticateToken, (req, res) => {
-//     // Достаем данные из запроса, из тела
-//     const { title, description, price } = req.body;
-//     // Добваляем суши в БД
-//     db.query('insert into sushi(title, description, price) values (?, ?, ?)', [title, description, price], (err, result) => {
-//         if (err) return res.status(500).json({ message: 'Не получилось добавить суши', error: err.message });
-//         // Отправляем ответ
-//         res.json({ id: result.insertId, title, description, price });
-//     });
-// });
-// // РОЛЛЫ
-// app.post('/rolls', authenticateToken, (req, res) => {
-//     // Достаем данные из запроса, из тела
-//     const { title, description, price } = req.body;
-//     // Добваляем роллы в БД
-//     db.query('insert into rolls(title, description, price) values (?, ?, ?)', [title, description, price], (err, result) => {
-//         if (err) return res.status(500).json({ message: 'Не получилось добавить роллы', error: err.message });
-//         // Отправляем ответ
-//         res.json({ id: result.insertId, title, description, price });
-//     });
-// });
-// // СОУСЫ
-// app.post('/sauces', authenticateToken, (req, res) => {
-//     // Достаем данные из запроса, из тела
-//     const { title, description, price } = req.body;
-//     // Добваляем соусы в БД
-//     db.query('insert into sauces(title, description, price) values (?, ?, ?)', [title, description, price], (err, result) => {
-//         if (err) return res.status(500).json({ message: 'Не получилось добавить соусы', error: err.message });
-//         // Отправляем ответ
-//         res.json({ id: result.insertId, title, description, price });
-//     });
-// });
-// // НАПИТКИ
-// app.post('/drinks', authenticateToken, (req, res) => {
-//     // Достаем данные из запроса, из тела
-//     const { title, description, price } = req.body;
-//     // Добваляем напитки в БД
-//     db.query('insert into drinks(title, description, price) values (?, ?, ?)', [title, description, price], (err, result) => {
-//         if (err) return res.status(500).json({ message: 'Не получилось добавить напитки', error: err.message });
-//         // Отправляем ответ
-//         res.json({ id: result.insertId, title, description, price });
-//     });
-// });
-// // }
+
+
+
 
 // ИЗМЕНЕНИЕ ПРОДУКЦИИ{
 // СЕТЫ
