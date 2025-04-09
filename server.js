@@ -96,54 +96,25 @@ db.connect(err => {
             console.log('Таблицы пользователей готова к использованию')
         });
 
-        // ТАБЛИЦЫ ПРОДУКЦИИ
-        // ===================================================================================================================
-        // _________________________________________________
-        // Переменная для создания таблицы СЕТОВ
+
+        // Переменная для создания таблицы ПРОДУКЦИИ
         const createTableProducts = 'create table if not exists products(id int auto_increment primary key, title varchar(255), description varchar(255), price smallint, productType varchar(255), quantity smallint)';
 
-        // Создание таблицы СЕТОВ в выбраной БД
+        // Создание таблицы ПРОДУКЦИИ в выбраной БД
         db.query(createTableProducts, (err) => {
             if (err) return console.error('Ошибка создания таблицы продукции', err);
             console.log('Таблица продукции готова к использованию');
         });
-        // // _________________________________________________
-        // // Переменная для создания таблицы СУШИ
-        // const createTableSushi = 'create table if not exists sushi(id int auto_increment primary key, title varchar(255) not null, description varchar(255), price smallint)';
 
-        // // Создание таблицы СУШИ в выбраной БД
-        // db.query(createTableSushi, (err) => {
-        //     if (err) return console.error('Ошибка создания таблицы суши', err);
-        //     console.log('Таблица суши готова к использованию');
-        // });
-        // // _________________________________________________
-        // // Переменная для создания таблицы РОЛЛОВ
-        // const createTableRolls = 'create table if not exists rolls(id int auto_increment primary key, title varchar(255) not null, description varchar(255), price smallint)';
 
-        // // Создание таблицы РОЛЛОВ в выбраной БД
-        // db.query(createTableRolls, (err) => {
-        //     if (err) return console.error('Ошибка создания таблицы роллов', err);
-        //     console.log('Таблица роллов готова к использованию');
-        // });
-        // // _________________________________________________
-        // // Переменная для создания таблицы СОУСОВ
-        // const createTableSauces = 'create table if not exists sauces(id int auto_increment primary key, title varchar(255) not null, description varchar(255), price smallint)';
+        // Переменная для создания таблицы ЗАКАЗОВ
+        const createTableOrders = 'create table if not exists orders(id bigint auto_increment primary key, title varchar(1000), price varchar(255), quantity varchar(255), tel smallint, name varchar(255), address varchar(255), user_id int not null, foreign key (user_id) references users(id))'
 
-        // // Создание таблицы СОУСОВ в выбраной БД
-        // db.query(createTableSauces, (err) => {
-        //     if (err) return console.error('Ошибка создания таблицы соусов', err);
-        //     console.log('Таблица соусов готова к использованию');
-        // });
-        // // _________________________________________________
-        // // Переменная для создания таблицы НАПИТКОВ
-        // const createTableDrinks = 'create table if not exists drinks(id int auto_increment primary key, title varchar(255) not null, description varchar(255), price smallint)';
-
-        // // Создание таблицы НАПИТКОВ в выбраной БД
-        // db.query(createTableDrinks, (err) => {
-        //     if (err) return console.error('Ошибка создания таблицы напитков', err);
-        //     console.log('Таблица напитков готова к использованию');
-        // });
-        // ===================================================================================================================
+        // Создание таблицы ПРОДУКЦИИ в выбраной БД
+        db.query(createTableOrders, (err) => {
+            if (err) return console.error('Ошибка создания таблицы заказов', err);
+            console.log('Таблица заказов готова к использованию');
+        });
 
         // Переменная для создания РЕФРЕШ-ТОКЕНА
         const createTableRefreshTokens = 'create table if not exists refresh_tokens(id int auto_increment primary key, token text not null unique, user_id int not null, foreign key (user_id) references users(id))';
@@ -359,7 +330,7 @@ app.post('/logout', (req, res) => {
 
 // ПОЛУЧЕНИЕ ПРОДУКЦИИ {
 // ПОЛУЧЕНИЕ СЕТОВ
-app.get('/sets', authenticateToken, (req, res) => {
+app.get('/sets', (req, res) => {
 
     db.query('select * from products where productType = "set"', (err, results) => {
         if (err) return res.status(500).json({ error: err.message, message: 'Не получилось получить сеты' });
@@ -369,7 +340,7 @@ app.get('/sets', authenticateToken, (req, res) => {
 });
 
 // ПОЛУЧЕНИЕ СУШИ
-app.get('/sushi', authenticateToken, (req, res) => {
+app.get('/sushi', (req, res) => {
     db.query('select * from products where productType = "sushi"', (err, results) => {
         if (err) return res.status(500).json({ error: err.message, message: 'Не получилось получить суши' });
 
@@ -378,7 +349,7 @@ app.get('/sushi', authenticateToken, (req, res) => {
 });
 
 // ПОЛУЧЕНИЕ РОЛЛОВ
-app.get('/rolls', authenticateToken, (req, res) => {
+app.get('/rolls', (req, res) => {
     db.query('select * from products where productType = "roll"', (err, results) => {
         if (err) return res.status(500).json({ error: err.message, message: 'Не получилось получить роллы' });
 
@@ -387,7 +358,7 @@ app.get('/rolls', authenticateToken, (req, res) => {
 });
 
 // ПОЛУЧЕНИЕ СОУСОВ
-app.get('/sauces', authenticateToken, (req, res) => {
+app.get('/sauces', (req, res) => {
     db.query('select * from products where productType = "sauces"', (err, results) => {
         if (err) return res.status(500).json({ error: err.message, message: 'Не получилось получить соусы' });
 
@@ -396,7 +367,7 @@ app.get('/sauces', authenticateToken, (req, res) => {
 });
 
 // ПОЛУЧЕНИЕ НАПИТКОВ
-app.get('/drinks', authenticateToken, (req, res) => {
+app.get('/drinks', (req, res) => {
     db.query('select * from products where productType = "drinks"', (err, results) => {
         if (err) return res.status(500).json({ error: err.message, message: 'Не получилось получить напитки' });
 
@@ -572,6 +543,63 @@ app.delete('/drinks/:id', authenticateToken, (req, res) => {
     });
 });
 // }
+
+// ЗАКАЗЫ{
+// ДОБАВЛЕНИЕ ЗАКАЗЫ
+    app.post('/order', authenticateToken, (req, res) => {
+        // Достаем данные из запроса, из тела
+        const { basketArr, tel, name, address, user_id } = req.body;
+        console.log({ basketArr, tel, name, address, user_id });
+
+        let title = '';
+        let price = '';
+        let quantity = '';
+
+        for(let i = 0; i < basketArr.length; i++){
+            // title.push(basketArr[i].title);
+            // price.push(basketArr[i].price);
+            // quantity.push(basketArr[i].quantity);
+            title += `${basketArr[i].title} `;
+            price += `${basketArr[i].price} `;
+            quantity += `${basketArr[i].quantity} `;
+        }
+
+        let titleStr = title;
+        let priceStr = price;
+        let quantityStr = quantity;
+
+        // title = (...title);
+
+        // price = price.toString();
+        // quantity = quantity.toString();
+
+        console.log(title);
+        console.log(price);
+        console.log(quantity);
+
+
+        // Добваляем заказ в БД
+        db.query('insert into orders(title, price, quantity, tel, name, address, user_id) values (?, ?, ?, ?, ?, ?, ?)', [titleStr, priceStr, quantityStr, tel, name, address, user_id ], (err, result) => {
+            if (err) return res.status(500).json({ message: 'Не получилось добавить сет', error: err.message });
+            // Отправляем ответ
+            console.log('заказ добавлен')
+            res.json({ id: result.insertId, titleStr, priceStr, quantityStr, tel, name, address, user_id});
+        });
+    });
+
+
+// }
+
+
+
+
+
+
+
+
+
+
+
 // ============================================================================================
 
 
