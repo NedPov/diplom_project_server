@@ -107,14 +107,15 @@ db.connect(err => {
         });
 
 
-        // Переменная для создания таблицы ЗАКАЗОВ
-        const createTableOrders = 'create table if not exists orders(id bigint auto_increment primary key, title varchar(1000), price varchar(255), quantity varchar(255), tel smallint, name varchar(255), address varchar(255), user_id int not null, foreign key (user_id) references users(id))'
+        // Переменная для создания таблицы ЗАКАЗОВ       
+        const createTableOrders = 'create table if not exists orders(id bigint auto_increment primary key, basketArr json, tel varchar(15), name varchar(255), address varchar(255), user_id int not null, foreign key (user_id) references users(id))'
 
         // Создание таблицы ПРОДУКЦИИ в выбраной БД
         db.query(createTableOrders, (err) => {
             if (err) return console.error('Ошибка создания таблицы заказов', err);
             console.log('Таблица заказов готова к использованию');
         });
+
 
         // Переменная для создания РЕФРЕШ-ТОКЕНА
         const createTableRefreshTokens = 'create table if not exists refresh_tokens(id int auto_increment primary key, token text not null unique, user_id int not null, foreign key (user_id) references users(id))';
@@ -544,48 +545,50 @@ app.delete('/drinks/:id', authenticateToken, (req, res) => {
 });
 // }
 
+
 // ЗАКАЗЫ{
-// ДОБАВЛЕНИЕ ЗАКАЗЫ
-    app.post('/order', authenticateToken, (req, res) => {
-        // Достаем данные из запроса, из тела
-        const { basketArr, tel, name, address, user_id } = req.body;
-        console.log({ basketArr, tel, name, address, user_id });
 
-        let title = '';
-        let price = '';
-        let quantity = '';
+// ПОЛУЧЕНИЕ ВСЕX ЗАКАЗОВ
+app.get('/order', (req, res) => {
 
-        for(let i = 0; i < basketArr.length; i++){
-            // title.push(basketArr[i].title);
-            // price.push(basketArr[i].price);
-            // quantity.push(basketArr[i].quantity);
-            title += `${basketArr[i].title} `;
-            price += `${basketArr[i].price} `;
-            quantity += `${basketArr[i].quantity} `;
-        }
+    db.query('select * from orders', (err, results) => {
+        if (err) return res.status(500).json({ error: err.message, message: 'Не получилось получить заказы' });
 
-        let titleStr = title;
-        let priceStr = price;
-        let quantityStr = quantity;
-
-        // title = (...title);
-
-        // price = price.toString();
-        // quantity = quantity.toString();
-
-        console.log(title);
-        console.log(price);
-        console.log(quantity);
-
-
-        // Добваляем заказ в БД
-        db.query('insert into orders(title, price, quantity, tel, name, address, user_id) values (?, ?, ?, ?, ?, ?, ?)', [titleStr, priceStr, quantityStr, tel, name, address, user_id ], (err, result) => {
-            if (err) return res.status(500).json({ message: 'Не получилось добавить сет', error: err.message });
-            // Отправляем ответ
-            console.log('заказ добавлен')
-            res.json({ id: result.insertId, titleStr, priceStr, quantityStr, tel, name, address, user_id});
-        });
+        res.json(results);
     });
+});
+
+// ДОБАВЛЕНИЕ ЗАКАЗА
+app.post('/order', authenticateToken, (req, res) => {
+    // Достаем данные из запроса, из тела
+    const { basketArr, tel, name, address, user_id } = req.body;
+    console.log({ basketArr, tel, name, address, user_id });
+
+    const basketArrJson = JSON.stringify(basketArr);
+
+    console.log(basketArrJson);
+
+    // Добваляем заказ в БД
+    db.query('insert into orders(basketArr, tel, name, address, user_id) values (?, ?, ?, ?, ?)', [basketArrJson, tel, name, address, user_id], (err, result) => {
+        if (err) return res.status(500).json({ message: 'Не получилось добавить сет', error: err.message });
+        // Отправляем ответ
+        console.log('заказ добавлен')
+        res.json({ id: result.insertId, basketArr, tel, name, address, user_id });
+    });
+});
+
+// Удаление заказа с БД
+app.delete('/order/:id', authenticateToken, (req, res) => {
+    // Извлекаем id задачи из параметров адресной строки
+    const { id } = req.params;
+
+    // Запрос на удаление
+    db.query('delete from orders where id = ?', [id], (err) => {
+        // Обработка ошибки
+        if (err) return res.status(500).json({ message: "Ошибка удаления заказа" });
+        res.json({ message: 'заказ удален', id });
+    });
+});
 
 
 // }
