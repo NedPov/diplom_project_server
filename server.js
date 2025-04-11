@@ -108,7 +108,7 @@ db.connect(err => {
 
 
         // Переменная для создания таблицы ЗАКАЗОВ       
-        const createTableOrders = 'create table if not exists orders(id bigint auto_increment primary key, basketArr json, tel varchar(15), name varchar(255), address varchar(255), user_id int not null, foreign key (user_id) references users(id))'
+        const createTableOrders = 'create table if not exists orders(id bigint auto_increment primary key, basketArr json, tel varchar(15), name varchar(255), address varchar(255), completed boolean default false, user_id int not null, foreign key (user_id) references users(id))'
 
         // Создание таблицы ПРОДУКЦИИ в выбраной БД
         db.query(createTableOrders, (err) => {
@@ -549,31 +549,59 @@ app.delete('/drinks/:id', authenticateToken, (req, res) => {
 // ЗАКАЗЫ{
 
 // ПОЛУЧЕНИЕ ВСЕX ЗАКАЗОВ
-app.get('/order', (req, res) => {
+app.get('/order', authenticateToken, (req, res) => {
 
-    db.query('select * from orders', (err, results) => {
+    db.query('select * from orders',  (err, results) => {
         if (err) return res.status(500).json({ error: err.message, message: 'Не получилось получить заказы' });
 
         res.json(results);
     });
 });
 
+// ПОЛУЧЕНИЕ ЛИЧНОГО ЗАКАЗА
+app.get('/order/:id', authenticateToken, (req, res) => {
+    // Извлекаем id задачи из параметров адресной строки
+    const { id } = req.params;
+
+
+    db.query('select * from orders where user_id = ?', [id], (err, results) => {
+        if (err) return res.status(500).json({ error: err.message, message: 'Не получилось получить заказы' });
+
+        res.json(results);
+    });
+});
+
+
 // ДОБАВЛЕНИЕ ЗАКАЗА
 app.post('/order', authenticateToken, (req, res) => {
     // Достаем данные из запроса, из тела
-    const { basketArr, tel, name, address, user_id } = req.body;
-    console.log({ basketArr, tel, name, address, user_id });
+    const { basketArr, tel, name, address, userId } = req.body;
+    console.log({ basketArr, tel, name, address, userId });
 
     const basketArrJson = JSON.stringify(basketArr);
 
     console.log(basketArrJson);
 
     // Добваляем заказ в БД
-    db.query('insert into orders(basketArr, tel, name, address, user_id) values (?, ?, ?, ?, ?)', [basketArrJson, tel, name, address, user_id], (err, result) => {
+    db.query('insert into orders(basketArr, tel, name, address, user_id) values (?, ?, ?, ?, ?)', [basketArrJson, tel, name, address, userId], (err, result) => {
         if (err) return res.status(500).json({ message: 'Не получилось добавить сет', error: err.message });
         // Отправляем ответ
         console.log('заказ добавлен')
-        res.json({ id: result.insertId, basketArr, tel, name, address, user_id });
+        res.json({ id: result.insertId, basketArr, tel, name, address, userId });
+    });
+});
+
+
+// Заказ ПРИГОТОВЛЕН
+app.put('/order/:id/completed', authenticateToken, (req, res) => {
+    // Извлекаем id задачи из параметров адресной строки
+    const { id } = req.params;
+
+    // Запрос на изменение статуса выполнения 
+    db.query('update orders set completed = not completed where id = ?', [id], (err) => {
+        // Обработка ошибки
+        if (err) return res.status(500).json({ message: "Не удалось изменить статус заказа" });
+        res.json({ message: 'заказ приготовлен', id });
     });
 });
 
