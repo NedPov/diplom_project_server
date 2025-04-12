@@ -11,6 +11,20 @@ const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const multer = require('multer');
+
+
+
+// Работа С загрузкой файлов multer
+const storageConfig = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, process.cwd() + '/uploads');
+    },
+    filename: (req, file, cb) => {
+        cb(null, file.originalname);
+    }
+});
+
 
 // Подключаем пакеты для работы с токенами/паролем
 const bcrypt = require('bcrypt');
@@ -18,6 +32,7 @@ const jwt = require('jsonwebtoken');
 
 // Инициализируем приложение
 const app = express();
+
 
 // Обозначаем порт сервера (Обращаемся к файлу .env)
 const PORT = process.env.PORT || 5000;
@@ -30,6 +45,13 @@ app.use(express.json());
 // Работаем с куки
 app.use(cookieParser());
 
+app.use(express.urlencoded({extended: true}))
+app.use(express.static(process.cwd() + "/uploads"));
+
+// Работа с загрузкой файлов
+const upload = (multer({ storage: storageConfig }));
+
+// app.use(express.static("/uploads"));
 
 
 // АДМИНКА
@@ -98,7 +120,7 @@ db.connect(err => {
 
 
         // Переменная для создания таблицы ПРОДУКЦИИ
-        const createTableProducts = 'create table if not exists products(id int auto_increment primary key, title varchar(255), description varchar(255), price smallint, productType varchar(255), quantity smallint)';
+        const createTableProducts = 'create table if not exists products(id int auto_increment primary key, title varchar(255), description varchar(255), price int, productType varchar(255), quantity smallint, fileData varchar(500))';
 
         // Создание таблицы ПРОДУКЦИИ в выбраной БД
         db.query(createTableProducts, (err) => {
@@ -378,39 +400,51 @@ app.get('/drinks', (req, res) => {
 // }
 
 
+app.post('/upload', upload.single('file'), (req, res) =>{
+    const file = req.file;
+    console.log(file);
+    console.log(file.filename);
+    res.json(file.filename);
+} )
+
 
 // ДОБАВЛЕНИЕ ПРОДУКЦИИ{
-app.post('/addProducts', authenticateToken, (req, res) => {
+app.post('/addProducts', authenticateToken, upload.single("filedata"), (req, res) => {
     // Достаем данные из запроса, из тела
-    const { title, description, price, productType, quantity } = req.body;
-    console.log({ title, description, price, productType, quantity });
-    // Добваляем сет в БД
-    db.query('insert into products(title, description, price, productType, quantity) values (?, ?, ?, ?, ?)', [title, description, price, productType, quantity], (err, result) => {
+    const { title, description, price, productType, quantity, imgUrl} = req.body;
+   
+
+    console.log({ title, description, price, productType, quantity, imgUrl});
+
+
+
+    // Добваляем продукт в БД
+    db.query('insert into products(title, description, price, productType, quantity, fileData) values (?, ?, ?, ?, ?, ?)', [title, description, price, productType, quantity, imgUrl], (err, result) => {
         if (err) return res.status(500).json({ message: 'Не получилось добавить сет', error: err.message });
         // Отправляем ответ
-        res.json({ id: result.insertId, title, description, price, productType, quantity });
+        res.json({ id: result.insertId, title, description, price, productType, quantity, imgUrl });
     });
 });
 
 
 
 
-// ИЗМЕНЕНИЕ ПРОДУКЦИИ{
-// СЕТЫ
-app.put('/sets/:id/edit', authenticateToken, (req, res) => {
-    // Извлекаем id задачи из параметров адресной строки
-    const { id } = req.params;
-    // Извлекаем данные из формы
-    const { title, description, price } = req.body;
+// // ИЗМЕНЕНИЕ ПРОДУКЦИИ{
+// // СЕТЫ
+// app.put('/sets/:id/edit', authenticateToken, (req, res) => {
+//     // Извлекаем id задачи из параметров адресной строки
+//     const { id } = req.params;
+//     // Извлекаем данные из формы
+//     const { title, description, price } = req.body;
 
-    // Меняем значения сета 
-    db.query('update sets set title = ?, description = ?, price = ? where id = ?', [title, description, price, id], (err, result) => {
-        // обработка ошибки
-        if (err) return res.status(500).json({ message: 'Не удалось изменить статус сетов', error: err.message });
-        // Отправляем ответ
-        res.json({ message: 'Статус сета изменен', setsEdit: { title, description, price } });
-    });
-});
+//     // Меняем значения сета 
+//     db.query('update sets set title = ?, description = ?, price = ? where id = ?', [title, description, price, id], (err, result) => {
+//         // обработка ошибки
+//         if (err) return res.status(500).json({ message: 'Не удалось изменить статус сетов', error: err.message });
+//         // Отправляем ответ
+//         res.json({ message: 'Статус сета изменен', setsEdit: { title, description, price } });
+//     });
+// });
 
 // СУШИ
 app.put('/sushi/:id/edit', authenticateToken, (req, res) => {
@@ -485,7 +519,7 @@ app.delete('/sets/:id', authenticateToken, (req, res) => {
     const { id } = req.params;
 
     // Запрос на удаление
-    db.query('delete from sets where id = ?', [id], (err) => {
+    db.query('delete from products where id = ?', [id], (err) => {
         // Обработка ошибки
         if (err) return res.status(500).json({ message: "Ошибка удаления сеты" });
         res.json({ message: 'Сет удален', id });
@@ -498,10 +532,10 @@ app.delete('/sushi/:id', authenticateToken, (req, res) => {
     const { id } = req.params;
 
     // Запрос на удаление
-    db.query('delete from sushi where id = ?', [id], (err) => {
+    db.query('delete from products where id = ?', [id], (err) => {
         // Обработка ошибки
         if (err) return res.status(500).json({ message: "Ошибка удаления суши" });
-        res.json({ message: 'Суши удалены' });
+        res.json({ message: 'Суши удалены', id });
     });
 });
 
@@ -511,10 +545,10 @@ app.delete('/rolls/:id', authenticateToken, (req, res) => {
     const { id } = req.params;
 
     // Запрос на удаление
-    db.query('delete from rolls where id = ?', [id], (err) => {
+    db.query('delete from products where id = ?', [id], (err) => {
         // Обработка ошибки
         if (err) return res.status(500).json({ message: "Ошибка удаления роллов" });
-        res.json({ message: 'Роллы удалены' });
+        res.json({ message: 'Роллы удалены', id });
     });
 });
 
@@ -524,10 +558,10 @@ app.delete('/sauces/:id', authenticateToken, (req, res) => {
     const { id } = req.params;
 
     // Запрос на удаление
-    db.query('delete from sauces where id = ?', [id], (err) => {
+    db.query('delete from products where id = ?', [id], (err) => {
         // Обработка ошибки
         if (err) return res.status(500).json({ message: "Ошибка удаления соуса" });
-        res.json({ message: 'Соус удален' });
+        res.json({ message: 'Соус удален', id });
     });
 });
 
@@ -537,10 +571,10 @@ app.delete('/drinks/:id', authenticateToken, (req, res) => {
     const { id } = req.params;
 
     // Запрос на удаление
-    db.query('delete from drinks where id = ?', [id], (err) => {
+    db.query('delete from products where id = ?', [id], (err) => {
         // Обработка ошибки
         if (err) return res.status(500).json({ message: "Ошибка удаления напитка" });
-        res.json({ message: 'Напиток удален' });
+        res.json({ message: 'Напиток удален' , id});
     });
 });
 // }
@@ -551,7 +585,7 @@ app.delete('/drinks/:id', authenticateToken, (req, res) => {
 // ПОЛУЧЕНИЕ ВСЕX ЗАКАЗОВ
 app.get('/order', authenticateToken, (req, res) => {
 
-    db.query('select * from orders',  (err, results) => {
+    db.query('select * from orders', (err, results) => {
         if (err) return res.status(500).json({ error: err.message, message: 'Не получилось получить заказы' });
 
         res.json(results);
