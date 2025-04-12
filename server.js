@@ -51,7 +51,7 @@ app.use(express.static(process.cwd() + "/uploads"));
 // Работа с загрузкой файлов
 const upload = (multer({ storage: storageConfig }));
 
-// app.use(express.static("/uploads"));
+
 
 
 // АДМИНКА
@@ -346,8 +346,6 @@ app.post('/logout', (req, res) => {
 
 
 
-
-
 // РАБОТА С ПРОДУКЦИЕЙ
 // ============================================================================================
 
@@ -413,9 +411,7 @@ app.post('/addProducts', authenticateToken, upload.single("filedata"), (req, res
     // Достаем данные из запроса, из тела
     const { title, description, price, productType, quantity, imgUrl} = req.body;
    
-
     console.log({ title, description, price, productType, quantity, imgUrl});
-
 
 
     // Добваляем продукт в БД
@@ -427,24 +423,6 @@ app.post('/addProducts', authenticateToken, upload.single("filedata"), (req, res
 });
 
 
-
-
-// // ИЗМЕНЕНИЕ ПРОДУКЦИИ{
-// // СЕТЫ
-// app.put('/sets/:id/edit', authenticateToken, (req, res) => {
-//     // Извлекаем id задачи из параметров адресной строки
-//     const { id } = req.params;
-//     // Извлекаем данные из формы
-//     const { title, description, price } = req.body;
-
-//     // Меняем значения сета 
-//     db.query('update sets set title = ?, description = ?, price = ? where id = ?', [title, description, price, id], (err, result) => {
-//         // обработка ошибки
-//         if (err) return res.status(500).json({ message: 'Не удалось изменить статус сетов', error: err.message });
-//         // Отправляем ответ
-//         res.json({ message: 'Статус сета изменен', setsEdit: { title, description, price } });
-//     });
-// });
 
 // СУШИ
 app.put('/sushi/:id/edit', authenticateToken, (req, res) => {
